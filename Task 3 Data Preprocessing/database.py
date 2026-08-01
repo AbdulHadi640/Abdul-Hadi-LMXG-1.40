@@ -1,6 +1,7 @@
 import os
 from sqlalchemy import create_engine, Column, Integer, String, Text, Table, MetaData
 from sqlalchemy.orm import declarative_base, sessionmaker
+from dotenv import load_dotenv
 load_dotenv()  
 DB_USER = os.getenv("PG_USER", "postgres")
 DB_PASSWORD = os.getenv("PG_PASSWORD", "")
