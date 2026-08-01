@@ -6,4 +6,4 @@ if __name__ == "__main__":
     run_news_pipeline()
     
     # 2. Test semantic search
-    # search_news("artificial intelligence breakthroughs", top_k=3)
+    search_news("artificial intelligence breakthroughs", top_k=3)
