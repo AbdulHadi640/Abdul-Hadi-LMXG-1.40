@@ -1,12 +1,12 @@
 import os
 from sqlalchemy import create_engine, Column, Integer, String, Text, Table, MetaData
 from sqlalchemy.orm import declarative_base, sessionmaker
-
-DB_USER = "postgres"
-DB_PASSWORD = "1234"
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "news_scraper"
+load_dotenv()  
+DB_USER = os.getenv("PG_USER", "postgres")
+DB_PASSWORD = os.getenv("PG_PASSWORD", "")
+DB_HOST = os.getenv("PG_HOST", "localhost")
+DB_PORT = os.getenv("PG_PORT", "5432")
+DB_NAME = os.getenv("PG_NAME", "news_scraper")
 
 DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
