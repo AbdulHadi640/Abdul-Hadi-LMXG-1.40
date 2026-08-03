@@ -10,7 +10,7 @@ and writes the results to a new database table and a CSV file.
 news_features_simple/
 ├── main.py                  # entry point — wires everything together
 ├── db.py                    # database connection, load, and save
-├── feature_engineering.py   # all feature-tagging logic
+├── feature_extraction.py   # all feature-tagging logic
 ├── .env                     # your database credentials (create this yourself)
 └── articles_with_features.csv   # generated after running main.py
 ```
