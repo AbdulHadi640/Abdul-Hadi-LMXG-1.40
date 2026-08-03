@@ -57,28 +57,6 @@ The script outputs to a single file: `lazypredict_results.csv`. This file has tw
 * **Top Section (The Metrics):** A scoreboard of all tested models, automatically sorted by **R-Squared** in descending order (best models at the top). It includes a custom **Accuracy (%)** metric, which is calculated as `100 - (MAPE * 100)`. Because the target variable (`clicks`) is a continuous number, traditional classification accuracy cannot be used.
 * **Bottom Section (The Predictions):** Below the `=== TEST SET PREDICTIONS ===` divider, you will find the exact numeric predictions that every single model made for every row in the hidden test set.
 
-## Features generated
-
-| Column | Description |
-|---|---|
-| `word_count` | Number of words in the title |
-| `category` | Primary news desk (Health, Politics, War & Conflict, Sports, etc.) |
-| `subcategory` | Secondary desk if a second topic also applies, else `"None"` |
-| `trending_topic` | The recurring word/story this title shares with many others in the dataset — computed from actual frequency, not a fixed list |
-| `is_trending` | `Yes`/`No` — whether a trending topic was found |
-| `tone` | `Positive` / `Negative` / `Neutral` |
-| `severity` | `High` / `Moderate` / `Low` — how serious the story reads |
-| `headline_style` | Breaking News / Explainer / Question / Analysis-Opinion / Recurring Feature / Straight News |
-| `urgency` | `Urgent` / `Developing` / `Routine` |
-| `story_scope` | `International` / `National` / `Local/Regional` |
-| `story_type` | Obituary / Live Coverage / Recurring Column / Q&A-Explainer / News Report |
-| `contains_quote` | `Yes`/`No` — title includes quotation marks |
-| `contains_statistic` | `Yes`/`No` — title includes a number/percentage/dollar figure |
-| `region` | Geographic region the story is about |
-| `mentioned_entities` | Named people/organizations recognized in the title |
-| `involves_children` | `Yes`/`No` |
-| `audience` | Parents & Families / Policy Makers / Investors / Medical Professionals / General Public |
-| `emb_0` ... `emb_383` | 384-dimensional sentence transformer embeddings |
 
 ## Important notes
 
