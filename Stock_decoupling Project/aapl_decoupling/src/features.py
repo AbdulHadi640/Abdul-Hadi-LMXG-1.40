@@ -26,9 +26,7 @@ except ImportError:
         HISTORICAL_DATA_FILE,
     )
 
-# ============================================================
 # EXACT CLOCK / ROLLING HELPERS
-# ============================================================
 
 def exact_clock_value(frame, value_column, minutes):
     left = frame[["TradingDate", "Datetime"]].copy()
@@ -90,11 +88,7 @@ def rolling_mean_by_day(frame, value_column, window, min_periods, closed):
     return rolling_by_day(
         frame, value_column, window, min_periods, closed, "mean"
     )
-
-
-# ============================================================
 # INPUT / PREPROCESSING
-# ============================================================
 
 def required_raw_columns():
     columns = [
@@ -218,12 +212,8 @@ def validate_raw_columns(df):
             "Missing raw columns:\n"
             + "\n".join(missing)
         )
-
-
-# ============================================================
+        
 # FEATURE BLOCKS
-# ============================================================
-
 def add_basic_features(df):
     """Returns, candle, groups and relative relationships."""
 
@@ -296,7 +286,6 @@ def add_basic_features(df):
     )
 
     return df
-
 
 def add_residual_features(df, prep):
     """Expected AAPL return + normalized residual."""
@@ -559,10 +548,7 @@ def add_multi_horizon_features(df, prep):
 
     return df
 
-
-# ============================================================
 # MAIN FEATURE BUILDER
-# ============================================================
 
 def build_features(
     master,
@@ -648,10 +634,7 @@ def get_model_ready_frame(feature_frame):
         .reset_index(drop=True)
     )
 
-
-# ============================================================
 # HISTORICAL 91-FEATURE AUDIT
-# ============================================================
 
 def audit_historical_features(last_n_days=5):
 
@@ -754,11 +737,7 @@ def audit_historical_features(last_n_days=5):
 
     return True
 
-
-# ============================================================
 # CLI
-# ============================================================
-
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:
