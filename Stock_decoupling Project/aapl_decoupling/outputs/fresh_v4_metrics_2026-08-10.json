@@ -1,0 +1,23 @@
+{
+    "rows": 308,
+    "accuracy": 0.9025974025974026,
+    "majority_baseline": 0.7435064935064936,
+    "gain_vs_baseline_pp": 15.909090909090907,
+    "balanced_accuracy": 0.8598750760046432,
+    "aligned_recall": 0.9475982532751092,
+    "decoupled_precision": 0.8356164383561644,
+    "decoupled_recall": 0.7721518987341772,
+    "decoupled_f1": 0.8026315789473685,
+    "macro_f1": 0.8689882032667877,
+    "tn": 217,
+    "fp": 12,
+    "fn": 18,
+    "tp": 61,
+    "roc_auc": 0.9547288707091924,
+    "pr_auc": 0.8970578353043874,
+    "prediction_rows": 322,
+    "clear_evaluable_rows": 308,
+    "effective_coverage": 0.9565217391304348,
+    "trading_date": "2026-08-10",
+    "model_version": "v4_base91_xgb_depth3_threshold043"
+}
