@@ -24,10 +24,7 @@ except ImportError:
     )
     from database import get_connection
 
-
-# ------------------------------------------------------------
 # API SETTINGS
-# ------------------------------------------------------------
 
 REQUEST_DELAY_SECONDS = 13
 MAX_RETRIES = 8
@@ -40,11 +37,7 @@ def _response_detail(response):
     except Exception:
         return response.text[:500]
 
-
-# ------------------------------------------------------------
 # MASSIVE API
-# ------------------------------------------------------------
-
 def download_ticker(
     ticker,
     date,
@@ -76,11 +69,7 @@ def download_ticker(
     retries = 0
 
     while url:
-
-        # ----------------------------------------------------
         # REQUEST
-        # ----------------------------------------------------
-
         try:
             response = requests.get(
                 url,
@@ -109,11 +98,7 @@ def download_ticker(
 
             time.sleep(wait)
             continue
-
-        # ----------------------------------------------------
         # RATE LIMIT
-        # ----------------------------------------------------
-
         if response.status_code == 429:
 
             retries += 1
@@ -145,11 +130,7 @@ def download_ticker(
 
             time.sleep(wait)
             continue
-
-        # ----------------------------------------------------
         # AUTH / ACCESS
-        # ----------------------------------------------------
-
         if response.status_code == 401:
             raise RuntimeError(
                 f"{ticker}: API authentication failed\n"
@@ -163,11 +144,7 @@ def download_ticker(
                 f"Massive response: "
                 f"{_response_detail(response)}"
             )
-
-        # ----------------------------------------------------
         # OTHER API ERRORS
-        # ----------------------------------------------------
-
         if not response.ok:
             raise RuntimeError(
                 f"{ticker}: Massive API HTTP "
@@ -177,11 +154,7 @@ def download_ticker(
             )
 
         retries = 0
-
-        # ----------------------------------------------------
         # READ RESPONSE
-        # ----------------------------------------------------
-
         payload = response.json()
 
         rows.extend(
@@ -195,17 +168,10 @@ def download_ticker(
             params = {
                 "apiKey": MASSIVE_API_KEY
             }
-
-    # --------------------------------------------------------
     # NO DATA
-    # --------------------------------------------------------
-
     if not rows:
         return pd.DataFrame()
-
-    # --------------------------------------------------------
     # CONVERT TO DATAFRAME
-    # --------------------------------------------------------
 
     df = pd.DataFrame({
         "open": [
@@ -245,11 +211,7 @@ def download_ticker(
             utc=True,
         ),
     })
-
-    # --------------------------------------------------------
     # UTC → NEW YORK
-    # --------------------------------------------------------
-
     ny_time = (
         df["timestamp_utc"]
         .dt.tz_convert(TIMEZONE)
@@ -264,11 +226,8 @@ def download_ticker(
     )
 
     df["ticker"] = ticker
-
-    # --------------------------------------------------------
     # REGULAR SESSION ONLY
     # 09:30 <= time < 16:00
-    # --------------------------------------------------------
 
     market_open = pd.Timestamp(
         MARKET_OPEN
@@ -292,12 +251,7 @@ def download_ticker(
         .drop_duplicates("timestamp_utc")
         .reset_index(drop=True)
     )
-
-
-# ------------------------------------------------------------
 # SAVE MARKET DATA
-# ------------------------------------------------------------
-
 def save_market_bars(df):
     """Insert/update bars in PostgreSQL."""
 
@@ -400,11 +354,7 @@ def save_market_bars(df):
 
     return len(records)
 
-
-# ------------------------------------------------------------
 # LOAD ONE DAY
-# ------------------------------------------------------------
-
 def load_day_from_database(date):
     """Load all stored tickers for one trading day."""
 
@@ -463,11 +413,7 @@ def load_day_from_database(date):
 
     return df
 
-
-# ------------------------------------------------------------
 # DAY SUMMARY
-# ------------------------------------------------------------
-
 def show_day_summary(date):
     """Show number of stored bars per ticker."""
 
@@ -515,12 +461,7 @@ def show_day_summary(date):
             f"bars={count:3} | "
             f"{start} to {end}"
         )
-
-
-# ------------------------------------------------------------
 # EXACT 12-WAY ALIGNMENT
-# ------------------------------------------------------------
-
 def build_aligned_master(date):
     """
     Keep only exact timestamps shared by
@@ -545,10 +486,7 @@ def build_aligned_master(date):
             f"{date}: "
             + ", ".join(missing)
         )
-
-    # --------------------------------------------------------
     # COMMON TIMESTAMPS
-    # --------------------------------------------------------
 
     common_times = None
 
@@ -586,11 +524,7 @@ def build_aligned_master(date):
         "vwap",
         "transactions",
     ]
-
-    # --------------------------------------------------------
     # MERGE EACH TICKER
-    # --------------------------------------------------------
-
     for ticker in TICKERS:
 
         temp = bars.loc[
@@ -661,12 +595,7 @@ def build_aligned_master(date):
     )
 
     return master
-
-
-# ------------------------------------------------------------
 # FETCH FULL DAY
-# ------------------------------------------------------------
-
 def fetch_day(date):
     """
     Download all project instruments
@@ -710,11 +639,8 @@ def fetch_day(date):
                 f"   ✅ {saved:,} "
                 f"regular-session bars"
             )
-
-        # ----------------------------------------------------
         # IMPORTANT:
         # Keep requests below API rate limit.
-        # ----------------------------------------------------
 
         if number < len(TICKERS):
 
@@ -734,10 +660,7 @@ def fetch_day(date):
 
     show_day_summary(date)
 
-
-# ------------------------------------------------------------
 # COMMAND LINE
-# ------------------------------------------------------------
 
 def main():
 
