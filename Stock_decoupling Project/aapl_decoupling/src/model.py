@@ -39,10 +39,7 @@ MODEL_VERSION = "v4_base91_xgb_depth3_threshold043"
 OUTPUTS_DIR = Path(TEST_METRICS_FILE).parent
 SUMMARY_FILE = OUTPUTS_DIR / "model_accuracy_summary.csv"
 
-
-# ============================================================
 # DATA
-# ============================================================
 
 def get_split_summary():
     sql = """
@@ -96,11 +93,7 @@ def prepare_usable_rows(df):
         raise ValueError("No usable model rows.")
     return clean
 
-
-# ============================================================
 # MODEL + METRICS
-# ============================================================
-
 def create_model():
     return XGBClassifier(**MODEL_PARAMS)
 
@@ -168,10 +161,7 @@ def print_metrics(title, m):
         print(f"PR-AUC             : {m['pr_auc']:.4f}")
     print(f"Confusion matrix   : [[{m['tn']}, {m['fp']}], [{m['fn']}, {m['tp']}]]")
 
-
-# ============================================================
 # SAVE HELPERS
-# ============================================================
 
 def save_model_bundle(model, path, splits, data):
     bundle = {
@@ -310,10 +300,7 @@ def run_frozen_test():
     print("⚠️ Do not tune using TEST results.")
     return m
 
-
-# ============================================================
 # TRAIN / VAL / TEST ACCURACY
-# ============================================================
 
 def evaluate_historical_splits():
     print("\n" + "=" * 70)
@@ -374,10 +361,7 @@ def evaluate_historical_splits():
     print("\nNOTE: TRAIN is diagnostic; VAL and TEST are holdout results.")
     return summary
 
-
-# ============================================================
 # DEPLOYMENT MODEL
-# ============================================================
 
 def train_deployment_model():
     data = prepare_usable_rows(load_historical_data())
@@ -396,10 +380,7 @@ def train_deployment_model():
     print("✅ Deployment model ready")
     return model
 
-
-# ============================================================
 # LIVE / FRESH FORWARD ACCURACY
-# ============================================================
 
 def load_frozen_predictions(date, model_version):
     sql = """
@@ -510,10 +491,7 @@ def evaluate_live_day(date):
     print(f"   {SUMMARY_FILE}")
     return evaluation, m
 
-
-# ============================================================
 # CLI
-# ============================================================
 
 def main():
     if len(sys.argv) < 2:
