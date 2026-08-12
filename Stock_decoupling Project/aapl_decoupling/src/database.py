@@ -13,12 +13,7 @@ except ImportError:
         PG_HOST, PG_PORT, PG_DATABASE,
         PG_USER, PG_PASSWORD,
     )
-
-
-# ============================================================
 # CONNECTIONS
-# ============================================================
-
 def get_connection(database=None, autocommit=False):
     """Return a psycopg connection."""
     return psycopg.connect(
@@ -43,10 +38,7 @@ def get_engine():
     )
     return create_engine(url, pool_pre_ping=True)
 
-
-# ============================================================
 # DATABASE SETUP
-# ============================================================
 
 def create_database_if_not_exists():
     """Create project database when missing."""
@@ -91,10 +83,7 @@ def test_connection():
     finally:
         engine.dispose()
 
-
-# ============================================================
 # TABLE SCHEMA
-# ============================================================
 
 TABLES = [
     """
@@ -239,10 +228,7 @@ def show_tables():
     finally:
         engine.dispose()
 
-
-# ============================================================
 # INITIALIZATION
-# ============================================================
 
 def initialize_database():
     print("\nAAPL DECOUPLING DATABASE SETUP")
