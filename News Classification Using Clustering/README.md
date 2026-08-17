@@ -1,29 +1,41 @@
 # 📰 News Title Clustering
 
 <p align="center">
-  <b>Unsupervised Machine Learning for Discovering Natural Topics in News Headlines</b>
+  <b>Two-Stage Machine Learning: News Title Clustering with KMeans + Supervised KNN Prediction</b>
 </p>
 
 ---
 
 ## 📌 Overview
 
-This project applies **unsupervised machine learning** to group news titles into meaningful clusters using a combination of:
+This project uses a **two-stage machine learning workflow**.
+
+### Stage 1 — Unsupervised Clustering
+News titles are grouped into meaningful natural clusters using:
 
 - **TF-IDF text features**
 - **Engineered numerical features**
-- **Dimensionality reduction**
+- **Feature scaling**
+- **TruncatedSVD dimensionality reduction**
 - **Multiple clustering algorithms**
 - **Internal and external clustering evaluation**
+- **Cluster profiling and manual human-readable naming**
 
-> **Important:** The original category labels are **not used during clustering**.  
-> `True_Category` is preserved only for **post-hoc external evaluation** after the clusters have already been created.
+### Stage 2 — Supervised Learning on Clustered Data
+After KMeans creates the final cluster labels, those cluster IDs are treated as **pseudo-labels**.  
+A **K-Nearest Neighbors (KNN)** classifier is then trained on the 50-dimensional SVD features to predict the discovered KMeans cluster for unseen news titles.
+
+> **Important:** The original category labels are **not used during clustering** and are also **not used as the KNN target**.  
+> `True_Category` is preserved only for **post-hoc external clustering evaluation**.  
+> The KNN target is the **KMeans-generated cluster ID**.
 
 ---
 
 ## 🔄 Project Pipeline
 
 ```text
+STAGE 1 — UNSUPERVISED CLUSTERING
+
 Raw Dataset
     ↓
 Data Understanding
@@ -42,27 +54,50 @@ Feature Scaling
     ↓
 Feature Combination
     ↓
-Dimensionality Reduction
+TruncatedSVD (50 Dimensions)
     ↓
 Exploratory Data Analysis
     ↓
 Cluster Number Selection
     ↓
-Candidate Clustering Models
+KMeans / Agglomerative / GMM / DBSCAN
     ↓
 Internal Evaluation
     ↓
 External Evaluation
     ↓
-Best Model Selection
+Best Clustering Model = KMeans
+    ↓
+KMeans Cluster Labels
     ↓
 Cluster Profiling
     ↓
 Manual Cluster Naming
     ↓
-Outlier / Noise Detection
+Outlier / Noise Analysis
+
+STAGE 2 — SUPERVISED ML ON CLUSTERED DATA
+
+X = 50-Dimensional SVD Features
+y = KMeans Cluster IDs (Pseudo-Labels)
     ↓
-Deployment
+80/20 Stratified Train/Test Split
+    ↓
+KNN
+    ↓
+Test K = 1, 3, 5, 7, 9
+    ↓
+Accuracy Comparison
+    ↓
+Best K = 5
+    ↓
+Best KNN Accuracy = 98.54%
+    ↓
+Classification Report
+    ↓
+Confusion Matrix
+    ↓
+Deployment on Unseen News Titles
 ```
 
 ---
@@ -511,6 +546,108 @@ This cluster represents politics, international affairs, trade tensions, countri
 
 ---
 
+## 🧠 Supervised ML on Clustered Data using KNN
+
+After KMeans discovers the six natural clusters, the project moves to a second supervised stage.
+
+The final KMeans cluster IDs:
+
+```text
+0, 1, 2, 3, 4, 5
+```
+
+are treated as **pseudo-labels**.
+
+The supervised dataset is therefore:
+
+```text
+X = X_reduced
+y = KMeans Cluster IDs
+```
+
+where `X_reduced` contains the **50-dimensional TruncatedSVD representation** of each news title.
+
+> `True_Category` is **not** used as the KNN target.  
+> KNN learns to reproduce the cluster structure discovered by KMeans.
+
+### Train/Test Split
+
+The clustered dataset is split using:
+
+- **80% training data**
+- **20% testing data**
+- `random_state=42`
+- `stratify=y_knn`
+
+Stratification preserves approximately the same cluster proportions in both the training and test sets, which is important because the KMeans clusters have unequal sizes.
+
+The test set contains:
+
+```text
+890 samples
+```
+
+### KNN Neighbour Selection
+
+The following odd values of K are evaluated:
+
+```text
+K = 1, 3, 5, 7, 9
+```
+
+In **KNN**, K means the **number of nearest neighbours** used for voting.
+
+This is different from **KMeans**, where K means the **number of clusters**.
+
+### Best KNN Result
+
+The best result is:
+
+| Metric | Result |
+|---|---:|
+| Best K | **5** |
+| Best KNN Accuracy | **98.54%** |
+| Test Samples | **890** |
+| Macro Precision | **0.99** |
+| Macro Recall | **0.98** |
+| Macro F1-score | **0.99** |
+| Weighted Precision | **0.99** |
+| Weighted Recall | **0.99** |
+| Weighted F1-score | **0.99** |
+
+### KNN Classification Report
+
+| Cluster | Precision | Recall | F1-score | Support |
+|---:|---:|---:|---:|---:|
+| 0 | 0.99 | 1.00 | 0.99 | 426 |
+| 1 | 0.96 | 1.00 | 0.98 | 113 |
+| 2 | 1.00 | 1.00 | 1.00 | 36 |
+| 3 | 0.98 | 0.91 | 0.95 | 128 |
+| 4 | 1.00 | 1.00 | 1.00 | 81 |
+| 5 | 1.00 | 1.00 | 1.00 | 106 |
+
+Cluster **3** is the relatively most difficult cluster, with a recall of **0.91**, while clusters **2, 4, and 5** achieve perfect precision, recall, and F1-score on this test split.
+
+### What Does 98.54% Accuracy Mean?
+
+The **98.54% KNN accuracy is not original news-category classification accuracy**.
+
+It means:
+
+> KNN reproduces the **KMeans-generated cluster assignments** on unseen test samples with 98.54% accuracy.
+
+This is different from the **30.97% KMeans external clustering accuracy**, which compares the discovered KMeans clusters with the original `True_Category` labels after optimal Hungarian matching.
+
+Therefore:
+
+```text
+30.97% = KMeans clusters vs original dataset categories
+
+98.54% = KNN predictions vs KMeans-generated pseudo-labels
+```
+
+---
+
 ## 🚨 Noise / Outlier Detection
 
 DBSCAN is used to identify low-density samples and possible outliers.
@@ -533,7 +670,10 @@ KMeans itself does not create a noise category because every sample is assigned 
 
 ## 🚀 Deployment
 
-The final deployment model is **KMeans** because it supports prediction for unseen titles.
+The project uses **KMeans as the clustering model** and the **best KNN model (K=5) as the final supervised prediction stage**.
+
+KMeans first discovers the cluster structure during training.  
+KNN then learns those KMeans-generated cluster IDs and is used to predict the cluster of an unseen title.
 
 ### Prediction Pipeline
 
@@ -544,18 +684,22 @@ Cleaning
     ↓
 Engineered Numerical Features
     ↓
-TF-IDF Transformation
+Existing TF-IDF Transformation
     ↓
-Feature Scaling
+Existing Feature Scaling
     ↓
 Feature Combination
     ↓
-TruncatedSVD Transformation
+Existing TruncatedSVD Transformation
     ↓
-KMeans Prediction
+Best KNN Prediction (K = 5)
+    ↓
+Predicted KMeans Cluster ID
     ↓
 Human-Readable Cluster Name
 ```
+
+The fitted TF-IDF vectorizer, scaler, and SVD model are **reused with `.transform()`** during deployment. They are not fitted again on the new title.
 
 ### Example
 
@@ -618,8 +762,34 @@ Contains:
 
 ## 📌 Final Results
 
-| Metric | KMeans Result |
+### Stage 1 — KMeans Clustering
+
+| Metric | Result |
 |---|---:|
+| Number of Clusters | **6** |
+| Silhouette Score | **0.281452** |
+| Davies-Bouldin Score | **1.288999** |
+| Calinski-Harabasz Score | **853.660485** |
+| External Clustering Accuracy | **30.97%** |
+| ARI | **0.010764** |
+| NMI | **0.056402** |
+
+### Stage 2 — KNN on KMeans Pseudo-Labels
+
+| Metric | Result |
+|---|---:|
+| K values tested | **1, 3, 5, 7, 9** |
+| Best K | **5** |
+| Best KNN Test Accuracy | **98.54%** |
+| Test Samples | **890** |
+| Macro F1-score | **0.99** |
+| Weighted F1-score | **0.99** |
+
+> The two accuracy values measure different things.  
+> **30.97%** measures KMeans cluster agreement with the original dataset categories after Hungarian matching.  
+> **98.54%** measures how accurately KNN predicts the KMeans-generated pseudo-labels.
+
+---|---:|
 | Number of Clusters | **6** |
 | Silhouette Score | **0.281452** |
 | Davies-Bouldin Score | **1.288999** |
@@ -632,29 +802,40 @@ Contains:
 
 ## 📝 Conclusion
 
-KMeans is selected as the final clustering model with **6 clusters** because it provides the strongest overall internal clustering quality among the six-cluster candidate models while also producing understandable clusters and supporting prediction for unseen news titles.
+This project follows a **two-stage machine learning workflow**.
 
-The external clustering accuracy is approximately **30.97%**. This value should not be interpreted like supervised classification accuracy because the original category labels were never used to create the clusters.
+In the first stage, **KMeans** is selected as the final unsupervised clustering model with **6 clusters** because it provides the strongest overall internal clustering quality among the six-cluster candidate models. It achieves a Silhouette Score of **0.281452**, Davies-Bouldin Score of **1.288999**, and Calinski-Harabasz Score of **853.660485**.
 
-The naturally discovered groups are based on textual and engineered-feature similarity, so they do not necessarily match the predefined dataset categories exactly.
+The KMeans external clustering accuracy is approximately **30.97%**. This should not be interpreted like ordinary supervised classification accuracy because `True_Category` was never used to create the clusters. The naturally discovered groups are based on textual and engineered-feature similarity and therefore do not necessarily reproduce the predefined dataset categories.
 
-Overall, the project demonstrates a complete unsupervised text-clustering workflow including:
+In the second stage, the KMeans-generated cluster IDs are treated as **pseudo-labels** for a supervised **KNN classifier**. K values **1, 3, 5, 7, and 9** are compared. The best value is **K=5**, which achieves **98.54% test accuracy** on **890 held-out samples**. The classification report shows a macro F1-score of approximately **0.99** and a weighted F1-score of approximately **0.99**.
 
-- Data cleaning
-- TF-IDF representation
-- Feature engineering
+The KNN accuracy represents how accurately KNN reproduces the KMeans-generated cluster assignments. It does **not** represent accuracy against the original news categories.
+
+Overall, the project demonstrates:
+
+- Data understanding and cleaning
+- TF-IDF text representation
+- Numerical feature engineering
+- Feature selection / limitation
 - Feature scaling
-- Dimensionality reduction
-- Multi-model comparison
-- Internal and external evaluation
-- Hungarian matching
+- TruncatedSVD dimensionality reduction
+- Multi-model clustering comparison
+- Internal clustering evaluation
+- External post-hoc evaluation
+- Hungarian cluster-to-category matching
 - Cluster profiling
-- Manual semantic naming
-- Noise detection
-- Deployment for unseen titles
+- Manual human-readable naming
+- DBSCAN noise detection
+- Supervised learning on KMeans pseudo-labels
+- KNN hyperparameter comparison
+- Classification report and confusion matrix evaluation
+- Deployment for unseen news titles
 
 ---
 
 ## ⭐ Key Takeaway
 
-> **The goal of this project is not to reproduce the original category labels. The goal is to discover meaningful natural groups in news titles using unsupervised learning.*
+> **KMeans discovers the natural groups in the news titles, while KNN learns to predict those discovered groups for unseen titles.**
+
+> **KMeans external clustering accuracy = 30.97%, while KNN pseudo-label prediction accuracy = 98.54%. These metrics answer different questions and should not be compared as if they were the same type of accuracy.**
