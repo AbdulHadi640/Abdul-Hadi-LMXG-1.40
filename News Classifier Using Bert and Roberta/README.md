@@ -232,16 +232,6 @@ Possible output:
 Predicted Category: Technology
 ```
 
-## Data Leakage and Overfitting
-
-The dataset was split into training, validation, and test sets before model fine-tuning.
-
-The training set was used for model training, while the test set remained unseen during training.
-
-Exact duplicate headlines were removed before splitting to reduce the possibility of duplicate information appearing across different subsets.
-
-A small difference between training and validation performance may indicate some overfitting tendency, but the final BERT model still generalized reasonably well on unseen test data.
-
 ## Conclusion
 
 This project demonstrates how pretrained transformer models can be fine-tuned for news category classification.
